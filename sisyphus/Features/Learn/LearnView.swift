@@ -1,0 +1,464 @@
+//
+//  LearnView.swift
+//  sisyphus
+//
+
+import SwiftUI
+import SwiftData
+import OSLog
+
+
+struct LearnView: View {
+    @EnvironmentObject var errorManager: ErrorManager
+    
+    // Word logic
+    let dueWords: [DueWord]
+
+    // Possible stack for stack name etc.
+    let stack: Stack?
+
+    // Reuse hooks for onboarding's practice-card value moment (see Onboarding/).
+    // Defaults preserve existing behavior for every other call site.
+    var isPracticeMode: Bool = false
+    var showBackButton: Bool = true
+    var title: String? = nil
+    var onComplete: (() -> Void)? = nil
+
+    // UI
+    @State private var inReview = false
+    @State private var currentIndex = 0
+    @State private var showingFront = true
+
+    @State private var correctCount = 0
+    @State private var incorrectCount = 0
+
+    @State private var dragOffset: CGFloat = 0
+    @State private var cardOffset: CGFloat = 0
+    @State private var cardRotation: Double = 0
+
+    @State private var transitionTask: Task<Void, Never>? = nil
+
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var totalCount: Int { dueWords.count }
+
+    private var flipAnimation: Animation {
+        reduceMotion ? .linear(duration: 0.1) : .easeInOut(duration: 0.2)
+    }
+
+    private var answerAnimation: Animation {
+        reduceMotion ? .linear(duration: 0.15) : .spring(response: 0.35, dampingFraction: 0.8)
+    }
+
+    private var progress: Double {
+        guard totalCount > 0 else { return 0 }
+        return Double(currentIndex) / Double(totalCount)
+    }
+
+    var body: some View {
+        Group {
+            if inReview {
+                reviewPage
+            } else {
+                startPage
+            }
+        }
+        .background(Color(UIColor.systemGroupedBackground))
+        .navigationTitle(title ?? stack.map { "Stack \($0.id)" } ?? "Learn")
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        .trackScreen(isPracticeMode ? "Onboarding Practice Card" : "Learn")
+        .toolbar {
+            if showBackButton {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        finishOrDismiss()
+                    } label: {
+                        Label("Back", systemImage: "chevron.left")
+                    }
+                }
+            }
+        }
+        .task {
+            currentIndex = 0
+            showingFront = true
+            correctCount = 0
+            incorrectCount = 0
+            // Practice mode (onboarding's single demo card) skips straight to
+            // the card — real sessions show the "Ready to review" start page.
+            inReview = isPracticeMode
+        }
+    }
+
+    // MARK: Start Page
+    private var startPage: some View {
+        VStack(spacing: 24) {
+            Spacer()
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text("READY TO REVIEW")
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.secondary)
+                    .tracking(1.2)
+
+                Text(stack.map { "Stack \($0.id)" } ?? "Today's words")
+                    .font(.system(.largeTitle, design: .serif, weight: .semibold))
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 20)
+
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text("\(dueWords.count)")
+                        .font(.system(.largeTitle, design: .rounded, weight: .bold))
+                    Text(dueWords.count == 1 ? "word due" : "words due")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(20)
+            .background(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(Color(UIColor.secondarySystemGroupedBackground))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .stroke(Color.accentColor.opacity(0.15), lineWidth: 1)
+            )
+            .padding(.horizontal, 20)
+
+            Spacer()
+
+            Button {
+                inReview = true
+            } label: {
+                HStack {
+                    Text("Start Review")
+                        .font(.headline)
+                    Image(systemName: "play.fill")
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+            }
+            .buttonStyle(.borderedProminent)
+            .padding(.horizontal, 20)
+            .padding(.bottom, 32)
+        }
+    }
+
+    // MARK: Review Page
+    private var reviewPage: some View {
+        VStack(spacing: 20) {
+            progressHeader
+
+            if currentIndex < dueWords.count {
+                flashcard(for: dueWords[currentIndex])
+                    .padding(.horizontal, 20)
+
+                Spacer()
+
+                if !showingFront {
+                    answerButtons
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 24)
+                } else {
+                    Text("Tap the card to reveal the translation")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .padding(.bottom, 32)
+                }
+            } else {
+                completionView
+            }
+        }
+        .padding(.top, 12)
+    }
+
+    // MARK: Progress Header
+    private var progressHeader: some View {
+        VStack(spacing: 10) {
+            HStack {
+                Text("\(min(currentIndex + 1, totalCount)) of \(totalCount)")
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.secondary)
+
+                Spacer()
+
+                HStack(spacing: 12) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "checkmark.seal.fill")
+                            .font(.caption2)
+                            .foregroundColor(.green)
+                        Text("\(correctCount)")
+                            .font(.caption.weight(.semibold))
+                    }
+                    HStack(spacing: 4) {
+                        Image(systemName: "xmark.seal.fill")
+                            .font(.caption2)
+                            .foregroundColor(.red)
+                        Text("\(incorrectCount)")
+                            .font(.caption.weight(.semibold))
+                    }
+                }
+                .foregroundColor(.secondary)
+            }
+
+            ProgressView(value: progress)
+                .tint(.accentColor)
+        }
+        .padding(.horizontal, 20)
+    }
+
+    // MARK: Flashcard
+    private func flashcard(for word: DueWord) -> some View {
+        VStack(spacing: 16) {
+            Spacer()
+
+            if showingFront {
+                Text("LATIN")
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.secondary)
+                    .tracking(1.2)
+
+                Text(word.word)
+                    .font(.system(.largeTitle, design: .serif, weight: .semibold))
+                    .multilineTextAlignment(.center)
+                    .lineLimit(3)
+                    .minimumScaleFactor(0.6)
+            } else {
+                Text("TRANSLATION")
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.secondary)
+                    .tracking(1.2)
+
+                Text(word.translation)
+                    .font(.system(.title, design: .serif, weight: .semibold))
+                    .italic()
+                    .multilineTextAlignment(.center)
+                    .lineLimit(3)
+                    .minimumScaleFactor(0.6)
+            }
+
+            Spacer()
+
+            if showingFront {
+                Image(systemName: "hand.tap.fill")
+                    .font(.caption)
+                    .foregroundColor(.secondary.opacity(0.5))
+                    .accessibilityHidden(true)
+            }
+        }
+        .padding(28)
+        .frame(maxWidth: .infinity, minHeight: 320)
+        .background(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(Color(UIColor.secondarySystemGroupedBackground))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .stroke(Color.accentColor.opacity(0.15), lineWidth: 1)
+        )
+        .offset(x: dragOffset + cardOffset)
+        .rotationEffect(.degrees(Double((dragOffset + cardOffset) / 20)))
+        .contentShape(Rectangle())
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(showingFront ? "Latin word: \(word.word)" : "Translation: \(word.translation)")
+        .accessibilityHint(showingFront ? "Double tap to reveal the translation" : "Double tap to hide the translation")
+        .accessibilityAddTraits(.isButton)
+        .onTapGesture {
+            withAnimation(flipAnimation) {
+                showingFront.toggle()
+            }
+        }
+        .gesture(
+            DragGesture(minimumDistance: 20)
+                .onChanged { value in
+                    guard !showingFront else { return }
+                    dragOffset = value.translation.width
+                }
+                .onEnded { value in
+                    guard !showingFront else { return }
+
+                    let shouldCompleteSwipe =
+                        abs(value.translation.width) > abs(value.translation.height) &&
+                        abs(value.translation.width) > 80
+
+                    if shouldCompleteSwipe {
+                        answerCard(isCorrect: value.translation.width > 0)
+                    } else {
+                        withAnimation(.easeOut(duration: 0.2)) {
+                            dragOffset = 0
+                        }
+                    }
+                }
+        )
+    }
+
+    // MARK: Answer Buttons
+    private var answerButtons: some View {
+        HStack(spacing: 12) {
+            Button {
+                answerCard(isCorrect: false)
+            } label: {
+                HStack {
+                    Image(systemName: "xmark")
+                    Text("Wrong")
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+            }
+            .buttonStyle(.bordered)
+            .tint(.red)
+
+            Button {
+                answerCard(isCorrect: true)
+            } label: {
+                HStack {
+                    Image(systemName: "checkmark")
+                    Text("Right")
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.green)
+        }
+    }
+
+    // MARK: Completion
+    private var completionView: some View {
+        VStack(spacing: 20) {
+            Spacer()
+
+            ZStack {
+                Circle()
+                    .fill(Color.accentColor.opacity(0.15))
+                    .frame(width: 88, height: 88)
+                Image(systemName: "checkmark.seal.fill")
+                    .font(.system(size: 36, weight: .semibold))
+                    .foregroundColor(.accentColor)
+            }
+
+            VStack(spacing: 6) {
+                Text("Review complete")
+                    .font(.system(.title, design: .serif, weight: .semibold))
+
+                Text("You finished all \(totalCount) cards.")
+                    .foregroundColor(.secondary)
+            }
+
+            HStack(spacing: 12) {
+                statPill(value: "\(correctCount)", label: "Right", tint: .green)
+                statPill(value: "\(incorrectCount)", label: "Wrong", tint: .red)
+            }
+            .padding(.top, 8)
+
+            Spacer()
+
+            Button {
+                finishOrDismiss()
+            } label: {
+                Text("Done")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+            }
+            .buttonStyle(.borderedProminent)
+            .padding(.horizontal, 20)
+            .padding(.bottom, 32)
+        }
+        .padding(.horizontal, 20)
+        .onAppear {
+            AppLogger.ui.info("Review session completed: \(correctCount, privacy: .public) correct, \(incorrectCount, privacy: .public) incorrect")
+        }
+    }
+
+    private func finishOrDismiss() {
+        if let onComplete {
+            onComplete()
+        } else {
+            dismiss()
+        }
+    }
+
+    private func statPill(value: String, label: String, tint: Color) -> some View {
+        VStack(spacing: 4) {
+            Text(value)
+                .font(.system(.title3, design: .rounded, weight: .bold))
+                .foregroundColor(tint)
+            Text(label)
+                .font(.caption2)
+                .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color(UIColor.secondarySystemGroupedBackground))
+        )
+    }
+
+    // MARK: - Logic
+    private func answerCard(isCorrect: Bool) {
+        let wordId: UUID = dueWords[currentIndex].wordId
+        
+        let reviewedWord = ReviewedWord(
+            wordId: wordId,
+            reviewedAt: Date(),
+            correct: isCorrect ? 1 : 0,
+            incorrect: isCorrect ? 0 : 1,
+            averageResponseTimeMs: 1000 // Placeholder because backend doesn't handle it
+        )
+        
+        if isCorrect == true {
+            correctCount += 1
+        } else {
+            incorrectCount += 1
+        }
+
+        // Fire-and-forget: submit the review without blocking the UI.
+        // Practice-mode cards (onboarding's demo word) aren't real backend
+        // words, so there's nothing to submit a review for.
+        if !isPracticeMode {
+            Task {
+                do {
+                    try await submitSingleWordReview(reviewedWord: reviewedWord)
+                } catch {
+                    errorManager.show(error.localizedDescription)
+                }
+            }
+        }
+
+        let distance: CGFloat = 1000
+
+        withAnimation(answerAnimation) {
+            cardOffset = isCorrect ? distance : -distance
+        }
+
+        transitionTask?.cancel()
+
+        transitionTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 350_000_000)
+            guard !Task.isCancelled else { return }
+
+            var transaction = Transaction()
+            transaction.disablesAnimations = true
+            withTransaction(transaction) {
+                dragOffset = 0
+                cardOffset = 0
+                showingFront = true
+                currentIndex += 1
+            }
+        }
+    }
+}
+
+struct LearnView_Previews: PreviewProvider {
+    static var previews: some View {
+        NavigationStack {
+            LearnView(dueWords: [], stack: nil)
+        }
+    }
+}

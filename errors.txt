@@ -1,0 +1,132 @@
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:20:27 Instance method 'notice' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:20:34 Initializer 'init(stringLiteral:)' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:25:31 Instance method 'error' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:25:37 Instance method 'appendLiteral' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:25:37 Initializer 'init(stringInterpolation:)' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:25:55 Instance method 'appendInterpolation(_:align:privacy:)' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:25:94 Static property 'public' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:25:101 Instance method 'appendLiteral' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:25:108 Instance method 'appendInterpolation(_:align:privacy:)' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:25:145 Static property 'public' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:25:152 Instance method 'appendLiteral' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:27:31 Instance method 'error' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:27:37 Instance method 'appendLiteral' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:27:37 Initializer 'init(stringInterpolation:)' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:27:55 Instance method 'appendInterpolation(_:align:privacy:)' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:27:94 Static property 'public' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:27:101 Instance method 'appendLiteral' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:33:40 Instance method 'debug' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:33:46 Instance method 'appendLiteral' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:33:46 Initializer 'init(stringInterpolation:)' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:33:48 Instance method 'appendInterpolation(_:align:privacy:)' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:33:68 Static property 'public' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:33:75 Instance method 'appendLiteral' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:34:39 Instance method 'info' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:34:44 Instance method 'appendLiteral' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:34:44 Initializer 'init(stringInterpolation:)' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:34:46 Instance method 'appendInterpolation(_:align:privacy:)' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:34:66 Static property 'public' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:34:73 Instance method 'appendLiteral' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:35:42 Instance method 'warning' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:35:50 Instance method 'appendLiteral' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:35:50 Initializer 'init(stringInterpolation:)' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:35:52 Instance method 'appendInterpolation(_:align:privacy:)' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:35:72 Static property 'public' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:35:79 Instance method 'appendLiteral' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:36:40 Instance method 'error' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:36:46 Instance method 'appendLiteral' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:36:46 Initializer 'init(stringInterpolation:)' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:36:48 Instance method 'appendInterpolation(_:align:privacy:)' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:36:68 Static property 'public' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:36:75 Instance method 'appendLiteral' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:37:40 Instance method 'fault' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:37:46 Instance method 'appendLiteral' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:37:46 Initializer 'init(stringInterpolation:)' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:37:48 Instance method 'appendInterpolation(_:align:privacy:)' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:37:68 Static property 'public' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:37:75 Instance method 'appendLiteral' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:42:27 Instance method 'debug' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:42:33 Instance method 'appendLiteral' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:42:33 Initializer 'init(stringInterpolation:)' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:42:47 Instance method 'appendInterpolation(_:align:privacy:)' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:42:79 Static property 'public' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:42:86 Instance method 'appendLiteral' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:42:89 Instance method 'appendInterpolation(_:align:privacy:)' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:42:120 Static property 'public' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:42:127 Instance method 'appendLiteral' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:47:31 Instance method 'debug' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:47:37 Instance method 'appendLiteral' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:47:37 Initializer 'init(stringInterpolation:)' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:47:66 Instance method 'appendInterpolation(_:align:privacy:)' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:47:86 Static property 'private' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:47:94 Instance method 'appendLiteral' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:49:31 Instance method 'debug' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:49:37 Initializer 'init(stringLiteral:)' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:54:27 Instance method 'debug' is not available due to missing import of defining module 'os'
+
+/Volumes/Ventoy/latilearn-ios/sisyphus/ErrorMonitoring/NoOpErrorMonitoring.swift:54:33 Initializer 'init(stringLiteral:)' is not available due to missing import of defining module 'os'
