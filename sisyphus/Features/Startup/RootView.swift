@@ -9,7 +9,6 @@ import SwiftUI
 
 struct RootView: View {
     @State private var state: AppState = .loading
-    @State private var onboardingStore = OnboardingStore()
 
     var body: some View {
         NavigationStack {
@@ -18,13 +17,11 @@ struct RootView: View {
                 SplashView { state = $0 }
             case .serverError:
                 ServerError()
-            case .onboarding:
-                OnboardingRootView(store: onboardingStore, onFinished: { state = .authenticated })
             case .authenticated:
                 HomeView(onFinished: { state = $0 })
             case .unauthenticated:
                 LoginView(onAuthenticated: {
-                    state = OnboardingStore.hasCompletedOnboarding ? .authenticated : .onboarding
+                    state = .authenticated
                 })
             }
         }

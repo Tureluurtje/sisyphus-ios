@@ -26,6 +26,8 @@ struct LearnView: View {
 
     // UI
     @State private var inReview = false
+    @State private var reviewWords: [DueWord] = []
+    @State private var locallyRepeatedWordIDs: Set<UUID> = []
     @State private var currentIndex = 0
     @State private var showingFront = true
 
@@ -38,6 +40,7 @@ struct LearnView: View {
 
     @State private var transitionTask: Task<Void, Never>? = nil
 
+    @AppStorage("repeatIncorrectWords") private var repeatIncorrectWords = true
     @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -53,7 +56,7 @@ struct LearnView: View {
 
     private var progress: Double {
         guard totalCount > 0 else { return 0 }
-        return Double(currentIndex) / Double(totalCount)
+        return min(Double(currentIndex) / Double(totalCount), 1)
     }
 
     var body: some View {
@@ -81,6 +84,8 @@ struct LearnView: View {
             }
         }
         .task {
+            reviewWords = dueWords.shuffled()
+            locallyRepeatedWordIDs = []
             currentIndex = 0
             showingFront = true
             correctCount = 0
@@ -153,8 +158,8 @@ struct LearnView: View {
         VStack(spacing: 20) {
             progressHeader
 
-            if currentIndex < dueWords.count {
-                flashcard(for: dueWords[currentIndex])
+            if currentIndex < reviewWords.count {
+                flashcard(for: reviewWords[currentIndex])
                     .padding(.horizontal, 20)
 
                 Spacer()
@@ -402,26 +407,38 @@ struct LearnView: View {
 
     // MARK: - Logic
     private func answerCard(isCorrect: Bool) {
-        let wordId: UUID = dueWords[currentIndex].wordId
-        
+        let word = reviewWords[currentIndex]
+        let isLocalRepeat = locallyRepeatedWordIDs.contains(word.wordId)
+
+        if !isCorrect && repeatIncorrectWords {
+            reviewWords.append(word)
+            locallyRepeatedWordIDs.insert(word.wordId)
+        }
+
         let reviewedWord = ReviewedWord(
-            wordId: wordId,
+            wordId: word.wordId,
             reviewedAt: Date(),
             correct: isCorrect ? 1 : 0,
             incorrect: isCorrect ? 0 : 1,
             averageResponseTimeMs: 1000 // Placeholder because backend doesn't handle it
         )
         
-        if isCorrect == true {
-            correctCount += 1
+        if isCorrect {
+            Haptics.success()
+            if !isLocalRepeat {
+                correctCount += 1
+            }
         } else {
-            incorrectCount += 1
+            Haptics.light()
+            if !isLocalRepeat {
+                incorrectCount += 1
+            }
         }
 
-        // Fire-and-forget: submit the review without blocking the UI.
+        // Repeated attempts are local practice only and are not submitted.
         // Practice-mode cards (onboarding's demo word) aren't real backend
         // words, so there's nothing to submit a review for.
-        if !isPracticeMode {
+        if !isPracticeMode && !isLocalRepeat {
             Task {
                 do {
                     try await submitSingleWordReview(reviewedWord: reviewedWord)

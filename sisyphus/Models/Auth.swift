@@ -19,7 +19,6 @@ struct RefreshTokenPair {
 enum AppState {
     case loading
     case serverError
-    case onboarding
     case authenticated
     case unauthenticated
 }

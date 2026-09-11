@@ -71,7 +71,7 @@ struct SplashView: View {
                 // Phase-first: a restored session doesn't mean onboarding was
                 // ever finished (e.g. the user force-quit right after
                 // registering, before answering the practice card).
-                onFinished(OnboardingStore.hasCompletedOnboarding ? .authenticated : .onboarding)
+                onFinished(.authenticated)
             }
 
         } catch AuthError.missingTokens {

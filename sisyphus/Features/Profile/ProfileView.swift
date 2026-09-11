@@ -86,6 +86,7 @@ struct SettingsView: View {
     let userProfile: UserProfile?
 
     @AppStorage("dailyReminderEnabled") private var notificationsEnabled = false
+    @AppStorage("repeatIncorrectWords") private var repeatIncorrectWords = true
     @State private var isConfirming = false
     
     var body: some View {
@@ -124,6 +125,10 @@ struct SettingsView: View {
                 row {
                     Toggle("Daily reminder", isOn: $notificationsEnabled)
                 }
+                divider
+                row {
+                    Toggle("Repeat missed words", isOn: $repeatIncorrectWords)
+                }
             }
             .onChange(of: notificationsEnabled) { _, isEnabled in
                 Task { await handleNotificationsToggle(isEnabled) }
@@ -143,17 +148,6 @@ struct SettingsView: View {
                     Link("Legal", destination: URL(string: "https://sisyphus.kwako.nl/legal")!)
                 }
             }
-
-            #if DEBUG
-            settingsSection("Debug") {
-                row {
-                    Button("Reset onboarding") {
-                        OnboardingStore.hasCompletedOnboarding = false
-                        OnboardingInstrumentation.resetForTesting()
-                    }
-                }
-            }
-            #endif
         }
     }
 
@@ -212,7 +206,6 @@ struct SettingsView: View {
             onFinished(.unauthenticated)
         }
     }
-
     private func handleNotificationsToggle(_ isEnabled: Bool) async {
         if isEnabled {
             let granted = await NotificationManager.shared.requestAuthorization()
