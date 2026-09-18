@@ -4,62 +4,161 @@ import SwiftUI
 import OSLog
 import SwiftData
 
-struct ProfileView: View {
-    let userProfile: UserProfile?
+// MARK: - Supported languages
 
-    let onFinished: (AppState) -> Void
+enum AppLanguage: String, CaseIterable, Identifiable {
+    case system
+    case english = "en"
+    case dutch   = "nl"
+    case french  = "fr"
+    case german  = "de"
+    case spanish = "es"
 
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                HStack(alignment: .top, spacing: 16) {
-                    ZStack {
-                        Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [Color.orange, Color.red.opacity(0.85)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .frame(width: 76, height: 76)
+    var id: String { rawValue }
 
-                        Image(systemName: "person.fill")
-                            .font(.system(size: 28, weight: .semibold))
-                            .foregroundColor(.white)
-                    }
-
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(userProfile?.username ?? "?")
-                            .font(.title2.weight(.semibold))
-                        Text("Year \(userProfile.map { String($0.grade) } ?? "?")")
-                            .font(.caption)
-                            .textCase(.uppercase)
-                            .foregroundColor(.secondary)
-                    }
-                }
-
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Activity")
-                        .font(.caption)
-                        .textCase(.uppercase)
-                        .foregroundColor(.secondary)
-
-                    HStack {
-                        ProfileStat(title: "Streak", value: "\(userProfile.map { String($0.streak) } ?? "?")")
-                        ProfileStat(title: "Learned", value: "\(userProfile.map { String($0.totalWordsLearned) } ?? "?")")
-                    }
-                }
-
-                SettingsView(onFinished: onFinished, userProfile: userProfile)
-            }
-            .padding(.horizontal, 20)
-            .padding(.top, 20)
-            .padding(.bottom, 20)
+    /// Label shown in the picker.
+    var displayName: String {
+        switch self {
+        case .system:  return "System"
+        case .english: return "English"
+        case .dutch:   return "Nederlands"
+        case .french:  return "Français"
+        case .german:  return "Deutsch"
+        case .spanish: return "Español"
         }
-        .trackScreen("Profile")
+    }
+
+    /// Resolved locale for the whole app. `system` falls through to the
+    /// device locale so SwiftUI handles it automatically.
+    var locale: Locale? {
+        switch self {
+        case .system:  return nil
+        case .english: return Locale(identifier: "en")
+        case .dutch:   return Locale(identifier: "nl")
+        case .french:  return Locale(identifier: "fr")
+        case .german:  return Locale(identifier: "de")
+        case .spanish: return Locale(identifier: "es")
+        }
     }
 }
+
+// MARK: - Profile
+
+struct ProfileView: View {
+    let userProfile: UserProfile?
+    let onFinished: (AppState) -> Void
+
+    /// Called when the user changes their year. The closure is expected to
+    /// PATCH the backend and then trigger an app-wide refresh.
+    var onGradeChanged: ((Int) async -> Void)? = nil
+
+    @State private var selectedGrade: Int
+
+    init(
+        userProfile: UserProfile?,
+        onFinished: @escaping (AppState) -> Void,
+        onGradeChanged: ((Int) async -> Void)? = nil
+    ) {
+        self.userProfile = userProfile
+        self.onFinished = onFinished
+        self.onGradeChanged = onGradeChanged
+        _selectedGrade = State(initialValue: userProfile?.grade ?? 1)
+    }
+
+    var body: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 24) {
+                profileCard
+                activitySection
+                SettingsView(
+                    onFinished: onFinished,
+                    userProfile: userProfile,
+                    selectedGrade: $selectedGrade,
+                    onGradeChanged: onGradeChanged
+                )
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 24)
+            .padding(.bottom, 32)
+        }
+        .background(Color(UIColor.systemGroupedBackground))
+        .navigationTitle("Profile")
+        .navigationBarTitleDisplayMode(.inline)
+        .trackScreen("Profile")
+    }
+
+    // MARK: Identity card
+    private var profileCard: some View {
+        HStack(alignment: .center, spacing: 16) {
+            ZStack {
+                Circle()
+                    .fill(Color.accentColor.opacity(0.15))
+
+                Image(systemName: "person.fill")
+                    .font(.system(size: 28, weight: .semibold))
+                    .foregroundColor(.accentColor)
+            }
+            .frame(width: 72, height: 72)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(userProfile?.username ?? "?")
+                    .font(.system(.title2, design: .serif, weight: .semibold))
+                    .foregroundColor(.primary)
+
+                Text("Year \(selectedGrade)")
+                    .font(.caption.weight(.semibold))
+                    .textCase(.uppercase)
+                    .tracking(1.2)
+                    .foregroundColor(.secondary)
+
+                if let email = userProfile?.email, !email.isEmpty {
+                    Text(email)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                        .padding(.top, 2)
+                }
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color(UIColor.secondarySystemGroupedBackground))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .stroke(Color.accentColor.opacity(0.15), lineWidth: 1)
+        )
+    }
+
+    // MARK: Activity
+    private var activitySection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Activity")
+                .font(.caption.weight(.semibold))
+                .textCase(.uppercase)
+                .tracking(1.2)
+                .foregroundColor(.secondary)
+
+            HStack(spacing: 12) {
+                ProfileStat(
+                    title: "Streak",
+                    value: userProfile.map { String($0.streak) } ?? "?"
+                )
+                ProfileStat(
+                    title: "Learned",
+                    value: userProfile.map { String($0.totalWordsLearned) } ?? "?"
+                )
+            }
+        }
+    }
+}
+
+// MARK: - Stat card
 
 private struct ProfileStat: View {
     let title: String
@@ -68,27 +167,56 @@ private struct ProfileStat: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(value)
-                .font(.title3.weight(.semibold))
+                .font(.system(.title3, design: .serif, weight: .semibold))
+                .foregroundColor(.primary)
+
             Text(title)
                 .font(.caption)
+                .textCase(.uppercase)
+                .tracking(1.2)
                 .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(RoundedRectangle(cornerRadius: 16).fill(Color.secondary.opacity(0.08)))
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color(UIColor.secondarySystemGroupedBackground))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(Color.accentColor.opacity(0.15), lineWidth: 1)
+        )
     }
 }
 
-struct SettingsView: View {
+// MARK: - Settings
 
+struct SettingsView: View {
     @EnvironmentObject var errorManager: ErrorManager
     let onFinished: (AppState) -> Void
     let userProfile: UserProfile?
+    @Binding var selectedGrade: Int
+    var onGradeChanged: ((Int) async -> Void)? = nil
 
     @AppStorage("dailyReminderEnabled") private var notificationsEnabled = false
     @AppStorage("repeatIncorrectWords") private var repeatIncorrectWords = true
+    @AppStorage("appLanguage") private var appLanguageRaw: String = AppLanguage.system.rawValue
+
     @State private var isConfirming = false
-    
+    @State private var isConfirmingGradeChange = false
+    @State private var isConfirmingGradeRefresh = false
+    @State private var pendingGrade: Int?
+
+    private let gradeRange: ClosedRange<Int> = 1...6
+
+    /// Bound view of the raw `@AppStorage` string.
+    private var appLanguage: Binding<AppLanguage> {
+        Binding(
+            get: { AppLanguage(rawValue: appLanguageRaw) ?? .system },
+            set: { appLanguageRaw = $0.rawValue }
+        )
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
             settingsSection("Account") {
@@ -121,7 +249,12 @@ struct SettingsView: View {
                     .tint(.red)
                 }
             }
+
             settingsSection("Learning") {
+                gradeRow
+                divider
+                // languageRow
+                divider
                 row {
                     Toggle("Daily reminder", isOn: $notificationsEnabled)
                 }
@@ -149,6 +282,87 @@ struct SettingsView: View {
                 }
             }
         }
+        .onChange(of: selectedGrade) { _, newValue in
+            guard newValue != userProfile?.grade else { return }
+            Task {
+                await onGradeChanged?(newValue)
+            }
+        }
+    }
+
+    // MARK: Grade row
+    private var gradeRow: some View {
+        row {
+            Button {
+                isConfirmingGradeChange = true
+            } label: {
+                HStack {
+                    Text("Grade")
+                        .foregroundColor(.primary)
+
+                    Spacer()
+
+                    Text("Grade \(selectedGrade)")
+                        .foregroundColor(.secondary)
+
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundColor(Color.secondary.opacity(0.5))
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .confirmationDialog(
+                "Change year",
+                isPresented: $isConfirmingGradeChange,
+                titleVisibility: .visible
+            ) {
+                ForEach(gradeRange, id: \.self) { grade in
+                    if grade != selectedGrade {
+                        Button("Year \(grade)") {
+                            pendingGrade = grade
+                            isConfirmingGradeRefresh = true
+                        }
+                    }
+                }
+                Button("Cancel", role: .cancel) { }
+            }
+            .confirmationDialog(
+                "This will refresh the app",
+                isPresented: $isConfirmingGradeRefresh,
+                titleVisibility: .visible
+            ) {
+                Button("Change to Year \(pendingGrade ?? selectedGrade)", role: .destructive) {
+                    if let pendingGrade {
+                        selectedGrade = pendingGrade
+                    }
+                    pendingGrade = nil
+                }
+                Button("Cancel", role: .cancel) {
+                    pendingGrade = nil
+                }
+            }
+        }
+    }
+
+    // MARK: Language row
+    private var languageRow: some View {
+        row {
+            HStack {
+                Text("Language")
+
+                Spacer()
+
+                Picker("Language", selection: appLanguage) {
+                    ForEach(AppLanguage.allCases) { lang in
+                        Text(lang.displayName).tag(lang)
+                    }
+                }
+                .pickerStyle(.menu)
+                .labelsHidden()
+                .tint(.secondary)
+            }
+        }
     }
 
     // MARK: - Building blocks
@@ -161,12 +375,20 @@ struct SettingsView: View {
             Text(title)
                 .font(.caption.weight(.semibold))
                 .textCase(.uppercase)
+                .tracking(1.2)
                 .foregroundColor(.secondary)
 
             VStack(spacing: 0) {
                 content()
             }
-            .background(RoundedRectangle(cornerRadius: 16).fill(Color.secondary.opacity(0.08)))
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(Color(UIColor.secondarySystemGroupedBackground))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(Color.accentColor.opacity(0.15), lineWidth: 1)
+            )
         }
     }
 
@@ -206,6 +428,7 @@ struct SettingsView: View {
             onFinished(.unauthenticated)
         }
     }
+
     private func handleNotificationsToggle(_ isEnabled: Bool) async {
         if isEnabled {
             let granted = await NotificationManager.shared.requestAuthorization()
@@ -240,7 +463,19 @@ struct SettingsView: View {
 struct ProfileView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationStack {
-            ProfileView(userProfile: UserProfile(userId: UUID(), username: "Preview", email: "preview@apple.com", grade: 3, totalWordsLearned: 200, streak: 57, createdAt: Date(), updatedAt: Date()), onFinished: { _ in })
+            ProfileView(
+                userProfile: UserProfile(
+                    userId: UUID(),
+                    username: "Preview",
+                    email: "preview@apple.com",
+                    grade: 3,
+                    totalWordsLearned: 200,
+                    streak: 57,
+                    createdAt: Date(),
+                    updatedAt: Date()
+                ),
+                onFinished: { _ in }
+            )
         }
     }
 }

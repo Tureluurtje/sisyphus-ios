@@ -18,6 +18,7 @@ struct RegisterView: View {
     @State private var isLoading: Bool = false
     @State private var errorMessage: String?
     @State private var didSubmit: Bool = false
+    @State private var didRegister: Bool = false
     @State private var isPasswordVisible: Bool = false
     @State private var isConfirmPasswordVisible: Bool = false
 
@@ -28,9 +29,6 @@ struct RegisterView: View {
     enum Field {
         case name, email, password, confirmPassword
     }
-
-    // MARK: - Dependencies
-    var onAuthenticated: () -> Void
 
     // MARK: - Validation (ONLY visible after submit)
     private var isEmailInvalid: Bool {
@@ -55,6 +53,24 @@ struct RegisterView: View {
     }
 
     var body: some View {
+        Group {
+            if didRegister {
+                RegisterVerifyEmailView(
+                    email: email,
+                    onBack: { dismiss() }
+                )
+            } else {
+                registrationForm
+            }
+        }
+        .background(Color(UIColor.systemGroupedBackground))
+        .navigationBarBackButtonHidden(true)
+        .trackScreen("Register")
+    }
+
+    // MARK: - Registration form
+
+    private var registrationForm: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 28) {
 
@@ -84,12 +100,9 @@ struct RegisterView: View {
                             isError: false,
                             content: {
                                 Menu {
-                                    Button("1") { selectedGrade = 1 }
-                                    Button("2") { selectedGrade = 2 }
-                                    Button("3") { selectedGrade = 3 }
-                                    Button("4") { selectedGrade = 4 }
-                                    Button("5") { selectedGrade = 5 }
-                                    Button("6") { selectedGrade = 6 }
+                                    ForEach(1...6, id: \.self) { grade in
+                                        Button("\(grade)") { selectedGrade = grade }
+                                    }
                                 } label: {
                                     HStack(spacing: 6) {
                                         Image(systemName: "graduationcap")
@@ -183,7 +196,6 @@ struct RegisterView: View {
                         }
                     )
 
-                    // MARK: Password mismatch message
                     if didSubmit && password != confirmPassword {
                         HStack(spacing: 6) {
                             Image(systemName: "exclamationmark.triangle.fill")
@@ -193,7 +205,6 @@ struct RegisterView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
 
-                    // MARK: Backend error
                     if let errorMessage {
                         HStack(spacing: 6) {
                             Image(systemName: "exclamationmark.triangle.fill")
@@ -203,7 +214,6 @@ struct RegisterView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
 
-                    // MARK: Button
                     Button {
                         Task { await register() }
                     } label: {
@@ -231,10 +241,6 @@ struct RegisterView: View {
                         .fill(Color(UIColor.secondarySystemGroupedBackground))
                 )
 
-                // Register is always reached by pushing from LoginView, so
-                // returning to it should pop back rather than push a second
-                // instance (which — combined with the hidden back button —
-                // would let Login/Register push onto each other endlessly).
                 Button {
                     dismiss()
                 } label: {
@@ -253,10 +259,7 @@ struct RegisterView: View {
             .padding(.horizontal, 20)
             .padding(.top, 40)
         }
-        .background(Color(UIColor.systemGroupedBackground))
         .scrollDismissesKeyboard(.interactively)
-        .navigationBarBackButtonHidden(true)
-        .trackScreen("Register")
     }
 
     // MARK: - Header
@@ -347,15 +350,142 @@ struct RegisterView: View {
                 password: password
             )
 
-            isLoading = false
-            onAuthenticated()
+            // The server issues tokens on register, but the account is unverified.
+            // Wipe them so the app can't silently auto-login via refresh — the user
+            // must verify their email in the browser and then log in normally.
+            clearLocalSession()
 
+            isLoading = false
+            Haptics.success()
+
+            withAnimation(.easeInOut(duration: 0.25)) {
+                didRegister = true
+            }
         } catch let error as AuthError {
             isLoading = false
             errorMessage = error.userFacingMessage
         } catch {
             isLoading = false
             errorMessage = error.localizedDescription
+        }
+    }
+}
+
+// MARK: - Post-registration verification screen
+
+private struct RegisterVerifyEmailView: View {
+    let email: String
+    var onBack: () -> Void
+
+    @State private var isResending = false
+    @State private var resendMessage: String?
+    @State private var resendError: String?
+
+    var body: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 28) {
+                VStack(spacing: 8) {
+                    Text("VERIFICATIO")
+                        .font(.caption.weight(.semibold))
+                        .tracking(1.2)
+                        .foregroundColor(.secondary)
+
+                    Text("Check your inbox")
+                        .font(.system(.title, design: .serif, weight: .semibold))
+                        .multilineTextAlignment(.center)
+
+                    Text("We sent a verification link to \(email). Open it in your browser to confirm your account, then come back here to log in.")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.top, 2)
+                }
+
+                VStack(spacing: 12) {
+                    Image(systemName: "envelope.badge.shield.half.filled")
+                        .font(.system(size: 52))
+                        .foregroundColor(.accentColor)
+                        .padding(.vertical, 8)
+
+                    Button {
+                        Task { await resend() }
+                    } label: {
+                        ZStack {
+                            if isResending {
+                                ProgressView().tint(.white)
+                            } else {
+                                Text("Resend email")
+                                    .font(.headline)
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+                    }
+                    .buttonStyle(.plain)
+                    .background(Color.accentColor)
+                    .foregroundColor(.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .disabled(isResending)
+
+                    if let resendMessage {
+                        Text(resendMessage)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+
+                    if let resendError {
+                        Text(resendError)
+                            .font(.caption)
+                            .foregroundColor(.red)
+                            .multilineTextAlignment(.center)
+                    }
+                }
+                .padding(20)
+                .background(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .fill(Color(UIColor.secondarySystemGroupedBackground))
+                )
+
+                Button {
+                    onBack()
+                } label: {
+                    HStack(spacing: 4) {
+                        Text("Already verified?")
+                            .foregroundColor(.secondary)
+                        Text("Log in")
+                            .foregroundColor(.accentColor)
+                            .fontWeight(.semibold)
+                    }
+                    .font(.subheadline)
+                }
+                .buttonStyle(.plain)
+                .padding(.bottom, 24)
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 40)
+            .frame(maxWidth: 420)
+            .frame(maxWidth: .infinity)
+        }
+        .background(Color(UIColor.systemGroupedBackground))
+    }
+
+    private func resend() async {
+        isResending = true
+        resendMessage = nil
+        resendError = nil
+
+        do {
+            try await requestAccountVerificationEmailService(email: email)
+            await MainActor.run {
+                isResending = false
+                resendMessage = "Verification email sent. Check your inbox."
+            }
+        } catch {
+            await MainActor.run {
+                isResending = false
+                resendError = error.localizedDescription
+            }
         }
     }
 }

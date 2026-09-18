@@ -52,6 +52,14 @@ struct EmptyStateView: View {
                 .tabItem {
                     Label("Home", systemImage: "house.fill")
                 }
+                
+                NavigationStack {
+                    PracticeView()
+                }
+                .tag("practice")
+                .tabItem {
+                    Label("Practice", systemImage: "target")
+                }
 
                 NavigationStack {
                     LeaderboardView()

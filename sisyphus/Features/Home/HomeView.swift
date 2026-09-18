@@ -10,12 +10,15 @@ struct HomeView: View {
     // MARK: Data retrieval logic
     @EnvironmentObject private var errorManager: ErrorManager
     let onFinished: (AppState) -> Void
+    var onRequestRefresh: () -> Void = {}
     
     @State private var stacks: GetAllStacksResponse?
 
     @State private var dueWords: DueWordsResponse?
     
     @State private var userProfile: UserProfile?
+    
+    @State private var isRefreshing = false
 
     var totalDue: Int {
         dueWords?.wordAmount ?? 0
@@ -60,6 +63,9 @@ struct HomeView: View {
         .task {
             await loadHomeData()
         }
+        .refreshable {
+            await loadHomeData(isRefresh: true)
+        }
     }
 
     private enum HomeLoadState {
@@ -77,6 +83,14 @@ struct HomeView: View {
             .tabItem {
                 Label("Home", systemImage: "house.fill")
             }
+            
+            NavigationStack {
+                PracticeView()
+            }
+            .tag("practice")
+            .tabItem {
+                Label("Practice", systemImage: "target")
+            }
 
             NavigationStack {
                 LeaderboardView()
@@ -87,7 +101,20 @@ struct HomeView: View {
             }
 
             NavigationStack {
-                ProfileView(userProfile: userProfile, onFinished: onFinished)
+                ProfileView(
+                    userProfile: userProfile,
+                    onFinished: onFinished,
+                    onGradeChanged: { newGrade in
+                        do {
+                            _ = try await updateUserSettingsService(grade: newGrade)
+                            await MainActor.run {
+                                onRequestRefresh()
+                            }
+                        } catch {
+                            // surface error via ErrorManager
+                        }
+                    }
+                )
             }
             .tag("profile")
             .tabItem {
@@ -140,7 +167,7 @@ struct HomeView: View {
                 wordId: UUID(),
                 chapterId: UUID(),
                 word: "Finis!",
-                translation: "Gefeliciteerd! Je bent klaar!"
+                translation: "Congrats! You're done for today!"
             )
         }
         return word
@@ -362,9 +389,15 @@ struct HomeView: View {
 
 
     @MainActor
-    private func loadHomeData() async {
-        loadState = .loading
-
+    private func loadHomeData(isRefresh: Bool = false) async {
+        if isRefresh {
+            guard !isRefreshing else { return }
+            isRefreshing = true
+        } else {
+            loadState = .loading
+        }
+        defer { if isRefresh { isRefreshing = false } }
+        
         do {
             async let fetchedDueWords = getDueWordsService(limit: nil, offset: nil)
             async let fetchedStacks = getStacksService()

@@ -48,6 +48,32 @@ func submitMultipleWordsReview(
         captureIfUnexpected(error, feature: "words")
         throw error
     }
+    
+}// MARK: - Difficult words
+
+func fetchDifficultWordsService(
+    apiClient: APIClient = NetworkAPIClient()
+) async throws -> DueWordsResponse {
+    do {
+        return try await apiClient.fetchDifficultWords()
+    } catch let error as APIClientError {
+        let mapped = mapAuthError(error)
+        AppLogger.network.notice("Difficult words fetch failed: \(mapped.userFacingMessage, privacy: .public)")
+        throw mapped
+    }
+}
+
+func submitDifficultReviewService(
+    reviewedWords: [ReviewedWord],
+    apiClient: APIClient = NetworkAPIClient()
+) async throws {
+    do {
+        try await apiClient.submitDifficultReview(reviewedWords: reviewedWords)
+    } catch let error as APIClientError {
+        let mapped = mapAuthError(error)
+        AppLogger.network.notice("Difficult review submit failed: \(mapped.userFacingMessage, privacy: .public)")
+        throw mapped
+    }
 }
 
 /// `APIClientError` cases are either already captured at the network layer

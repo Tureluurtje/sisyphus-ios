@@ -7,6 +7,17 @@ import SwiftUI
 import SwiftData
 import OSLog
 
+// MARK: - Which endpoint reviews get submitted to
+
+enum ReviewEndpoint {
+    /// POST /api/words/review — the default for due-word and stack sessions.
+    case standard
+
+    /// POST /api/words/difficult/review — used by the Practice tab's
+    /// "Difficult Words" card so its results feed the difficult-word model.
+    case difficult
+}
+
 
 struct LearnView: View {
     @EnvironmentObject var errorManager: ErrorManager
@@ -24,6 +35,11 @@ struct LearnView: View {
     var title: String? = nil
     var onComplete: (() -> Void)? = nil
 
+    /// Where reviews should be submitted. Defaults to the standard endpoint
+    /// so nothing else in the app has to change.
+    var reviewEndpoint: ReviewEndpoint = .standard
+
+    
     // UI
     @State private var inReview = false
     @State private var reviewWords: [DueWord] = []
@@ -441,7 +457,7 @@ struct LearnView: View {
         if !isPracticeMode && !isLocalRepeat {
             Task {
                 do {
-                    try await submitSingleWordReview(reviewedWord: reviewedWord)
+                    try await submitReview(reviewedWord)
                 } catch {
                     errorManager.show(error.localizedDescription)
                 }
@@ -468,6 +484,22 @@ struct LearnView: View {
                 showingFront = true
                 currentIndex += 1
             }
+        }
+    }
+
+    // MARK: - Review submission
+
+    /// Routes the reviewed word to the endpoint this session is configured for.
+    /// All existing sessions use `.standard`; only the Practice tab's difficult
+    /// card opts into `.difficult`.
+    private func submitReview(_ reviewedWord: ReviewedWord) async throws {
+        let client = NetworkAPIClient()
+
+        switch reviewEndpoint {
+        case .standard:
+            try await client.submitReview(reviewedWords: [reviewedWord])
+        case .difficult:
+            try await client.submitDifficultReview(reviewedWords: [reviewedWord])
         }
     }
 }

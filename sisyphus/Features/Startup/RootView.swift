@@ -9,6 +9,7 @@ import SwiftUI
 
 struct RootView: View {
     @State private var state: AppState = .loading
+    @State private var refreshID = UUID()
 
     var body: some View {
         NavigationStack {
@@ -18,19 +19,23 @@ struct RootView: View {
             case .serverError:
                 ServerError()
             case .authenticated:
-                HomeView(onFinished: { state = $0 })
+                HomeView(
+                    onFinished: { state = $0 },
+                    onRequestRefresh: {
+                        // Changing this forces SwiftUI to rebuild everything below,
+                        // which is the "app refresh" we want after a grade change.
+                        refreshID = UUID()
+                    }
+                )
             case .unauthenticated:
                 LoginView(onAuthenticated: {
                     state = .authenticated
                 })
             }
         }
-        .id(state)
+        .id(refreshID)
     }
 }
-
-
-
 
 #Preview {
     RootView()
