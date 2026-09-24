@@ -52,7 +52,7 @@ struct EmptyStateView: View {
                 .tabItem {
                     Label("Home", systemImage: "house.fill")
                 }
-                
+
                 NavigationStack {
                     PracticeView()
                 }
@@ -144,7 +144,7 @@ struct EmptyStateView: View {
                                     .fill(Color.accentColor)
                             )
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.microInteraction)
                     .padding(.horizontal, 24)
                     .frame(maxWidth: 360)
                 }

@@ -21,7 +21,7 @@ enum ReviewEndpoint {
 
 struct LearnView: View {
     @EnvironmentObject var errorManager: ErrorManager
-    
+
     // Word logic
     let dueWords: [DueWord]
 
@@ -39,7 +39,7 @@ struct LearnView: View {
     /// so nothing else in the app has to change.
     var reviewEndpoint: ReviewEndpoint = .standard
 
-    
+
     // UI
     @State private var inReview = false
     @State private var reviewWords: [DueWord] = []
@@ -75,18 +75,37 @@ struct LearnView: View {
         return min(Double(currentIndex) / Double(totalCount), 1)
     }
 
+    private var sessionName: String {
+        title ?? stack.map { "Stack \($0.id)" } ?? "Today's words"
+    }
+
+    private var sessionDescription: String {
+        stack == nil
+            ? "A focused review of the words waiting for you today."
+            : "A focused review of the cards waiting in this stack."
+    }
+
     var body: some View {
         Group {
             if inReview {
                 reviewPage
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .trailing).combined(with: .opacity),
+                        removal: .move(edge: .leading).combined(with: .opacity)
+                    ))
             } else {
                 startPage
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .leading).combined(with: .opacity),
+                        removal: .move(edge: .trailing).combined(with: .opacity)
+                    ))
             }
         }
         .background(Color(UIColor.systemGroupedBackground))
-        .navigationTitle(title ?? stack.map { "Stack \($0.id)" } ?? "Learn")
+        .navigationTitle(sessionName)
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
+        .animation(.smooth(duration: 0.3), value: inReview)
         .trackScreen(isPracticeMode ? "Onboarding Practice Card" : "Learn")
         .toolbar {
             if showBackButton {
@@ -118,18 +137,23 @@ struct LearnView: View {
             Spacer()
 
             VStack(alignment: .leading, spacing: 6) {
-                Text("READY TO REVIEW")
+                Text(stack == nil ? "TODAY'S SESSION" : "STACK REVIEW")
                     .font(.caption.weight(.semibold))
                     .foregroundColor(.secondary)
                     .tracking(1.2)
 
-                Text(stack.map { "Stack \($0.id)" } ?? "Today's words")
+                Text(sessionName)
                     .font(.system(.largeTitle, design: .serif, weight: .semibold))
+
+                Text(sessionDescription)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 20)
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 14) {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text("\(dueWords.count)")
                         .font(.system(.largeTitle, design: .rounded, weight: .bold))
@@ -150,23 +174,50 @@ struct LearnView: View {
             )
             .padding(.horizontal, 20)
 
+            HStack(spacing: 12) {
+                sessionStep(number: "1", title: "Reveal", subtitle: "Tap a card")
+                sessionStep(number: "2", title: "Answer", subtitle: "Swipe or choose")
+            }
+            .padding(.horizontal, 20)
+
             Spacer()
 
             Button {
                 inReview = true
+                Haptics.medium()
             } label: {
                 HStack {
-                    Text("Start Review")
+                    Text(dueWords.isEmpty ? "No cards due" : "Review \(dueWords.count) \(dueWords.count == 1 ? "card" : "cards")")
                         .font(.headline)
-                    Image(systemName: "play.fill")
+                    Image(systemName: dueWords.isEmpty ? "checkmark" : "arrow.right")
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
             }
             .buttonStyle(.borderedProminent)
+            .disabled(dueWords.isEmpty)
             .padding(.horizontal, 20)
             .padding(.bottom, 32)
         }
+    }
+
+    private func sessionStep(number: String, title: String, subtitle: String) -> some View {
+        HStack(spacing: 8) {
+            Text(number)
+                .font(.caption.weight(.bold))
+                .foregroundColor(.white)
+                .frame(width: 22, height: 22)
+                .background(Circle().fill(Color.accentColor))
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title)
+                    .font(.caption.weight(.semibold))
+                Text(subtitle)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // MARK: Review Page
@@ -292,6 +343,7 @@ struct LearnView: View {
             withAnimation(flipAnimation) {
                 showingFront.toggle()
             }
+            Haptics.selection()
         }
         .gesture(
             DragGesture(minimumDistance: 20)
@@ -363,10 +415,14 @@ struct LearnView: View {
             }
 
             VStack(spacing: 6) {
-                Text("Review complete")
+                Text(totalCount > 0 && correctCount == totalCount ? "Veni, vidi, didici" : "Review complete")
                     .font(.system(.title, design: .serif, weight: .semibold))
 
-                Text("You finished all \(totalCount) cards.")
+                Text(
+                    totalCount > 0 && correctCount == totalCount
+                        ? "You conquered every card."
+                        : "You finished all \(totalCount) cards."
+                )
                     .foregroundColor(.secondary)
             }
 
@@ -438,7 +494,7 @@ struct LearnView: View {
             incorrect: isCorrect ? 0 : 1,
             averageResponseTimeMs: 1000 // Placeholder because backend doesn't handle it
         )
-        
+
         if isCorrect {
             Haptics.success()
             if !isLocalRepeat {

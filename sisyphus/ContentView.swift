@@ -12,6 +12,10 @@ struct ContentView: View {
     var body: some View {
         RootView()
             .withErrorHost()
+            .buttonStyle(.microInteraction)
+            .onAppear {
+                AppReviewManager.recordLaunch()
+            }
     }
 }
 struct ContentView_Previews: PreviewProvider {

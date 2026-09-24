@@ -11,14 +11,16 @@ struct HomeView: View {
     @EnvironmentObject private var errorManager: ErrorManager
     let onFinished: (AppState) -> Void
     var onRequestRefresh: () -> Void = {}
-    
+
     @State private var stacks: GetAllStacksResponse?
 
     @State private var dueWords: DueWordsResponse?
-    
+
     @State private var userProfile: UserProfile?
-    
+
     @State private var isRefreshing = false
+    @State private var verbumTapCount = 0
+    @State private var isShowingHiddenMaxim = false
 
     var totalDue: Int {
         dueWords?.wordAmount ?? 0
@@ -40,14 +42,9 @@ struct HomeView: View {
     var body: some View {
         Group {
             switch loadState {
-            case .loading:
-                loadingView
-            case .content:
+            case .loading, .content:
                 navContent
             case .wordListUnavailable:
-                //EmptyStateView(
-                
-                
                 WordlistNotLoadedView(
                     userProfile: userProfile,
                     onRetry: {
@@ -66,6 +63,11 @@ struct HomeView: View {
         .refreshable {
             await loadHomeData(isRefresh: true)
         }
+        .alert("A hidden maxim", isPresented: $isShowingHiddenMaxim) {
+            Button("Ad astra") { }
+        } message: {
+            Text("Perseverantia omnia vincit. Keep rolling the stone.")
+        }
     }
 
     private enum HomeLoadState {
@@ -77,13 +79,20 @@ struct HomeView: View {
     private var navContent: some View {
         NavBar(selected: $selectedTab) {
             NavigationStack {
-                homePage
+                Group {
+                    if loadState == .loading {
+                        HomeSkeleton()
+                    } else {
+                        homePage
+                    }
+                }
+                .animation(.smooth(duration: 0.25), value: loadState)
             }
             .tag("home")
             .tabItem {
                 Label("Home", systemImage: "house.fill")
             }
-            
+
             NavigationStack {
                 PracticeView()
             }
@@ -124,28 +133,6 @@ struct HomeView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .navigationBarBackButtonHidden(true)
     }
-
-    private var loadingView: some View {
-        ZStack {
-            Color(UIColor.systemGroupedBackground)
-                .ignoresSafeArea()
-
-            VStack(spacing: 14) {
-                ProgressView()
-                    .scaleEffect(1.1)
-
-                Text("Loading your dashboard")
-                    .font(.headline)
-
-                Text("Fetching due words, stacks, and profile data.")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            .multilineTextAlignment(.center)
-            .padding(.horizontal, 24)
-        }
-    }
-
     // MARK: Helpers
 
     /// Fraction of this stack's words that are no longer due. `s.wordAmount`
@@ -185,7 +172,6 @@ struct HomeView: View {
             .padding(.bottom, 32)
         }
         .background(Color(UIColor.systemGroupedBackground))
-        .navigationTitle("LatiLearn")
         .navigationBarTitleDisplayMode(.inline)
         .trackScreen("Home")
     }
@@ -193,10 +179,21 @@ struct HomeView: View {
     // MARK: Hero
     private var heroSection: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("VERBUM DIEI")
-                .font(.caption.weight(.semibold))
-                .foregroundColor(.secondary)
-                .tracking(1.2)
+            Button {
+                verbumTapCount += 1
+                guard verbumTapCount == 5 else { return }
+                verbumTapCount = 0
+                isShowingHiddenMaxim = true
+                Haptics.success()
+            } label: {
+                Text("VERBUM DIEI")
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.secondary)
+                    .tracking(1.2)
+            }
+            .buttonStyle(.microInteraction)
+            .accessibilityLabel("Word of the day")
+            .accessibilityHint("Tap five times for a hidden maxim")
 
             Text(wordOfTheDay.word.capitalized)
                 .font(.system(.largeTitle, design: .serif, weight: .semibold))
@@ -211,9 +208,10 @@ struct HomeView: View {
         .padding(.horizontal, 20)
         .padding(.top, 24)
         .frame(maxWidth: .infinity, alignment: .leading)
+        .transition(.move(edge: .bottom).combined(with: .opacity))
     }
 
-    
+
     // MARK: CTA Card
 
     private var ctaCard: some View {
@@ -227,7 +225,7 @@ struct HomeView: View {
                 ) {
                     ctaCardContent
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.microInteraction)
             } else {
                 ctaCardContent
             }
@@ -247,6 +245,7 @@ struct HomeView: View {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text("\(totalDue)")
                         .font(.system(.largeTitle, design: .rounded, weight: .bold))
+                        .contentTransition(.numericText())
 
                     Text(totalDue == 1 ? "word due" : "words due")
                         .font(.subheadline)
@@ -297,6 +296,7 @@ struct HomeView: View {
 
             Text(value)
                 .font(.system(.title2, design: .rounded, weight: .bold))
+                .contentTransition(.numericText())
 
             Text(label)
                 .font(.caption2)
@@ -335,7 +335,7 @@ struct HomeView: View {
                         ) {
                             stackRow(for: s)
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.microInteraction)
                     } else {
                         stackRow(for: s)
                     }
@@ -397,7 +397,7 @@ struct HomeView: View {
             loadState = .loading
         }
         defer { if isRefresh { isRefreshing = false } }
-        
+
         do {
             async let fetchedDueWords = getDueWordsService(limit: nil, offset: nil)
             async let fetchedStacks = getStacksService()
@@ -409,6 +409,13 @@ struct HomeView: View {
             stacks = loadedStacks
             userProfile = loadedUserProfile
             dueWords = try await fetchedDueWords // fire dueWords last so the userProfile gets loaded and gets passed to WordListNotLoadedView
+
+            WidgetSnapshotStore.update(
+                dueCount: dueWords?.wordAmount ?? 0,
+                streak: loadedUserProfile.streak,
+                learned: loadedUserProfile.totalWordsLearned,
+                word: getWordOfTheDay(dueWords: dueWords)
+            )
 
             AppLogger.ui.info("Home data loaded successfully")
             loadState = .content

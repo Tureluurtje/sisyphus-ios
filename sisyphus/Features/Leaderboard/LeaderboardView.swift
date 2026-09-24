@@ -3,11 +3,26 @@ import OSLog
 
 struct LeaderboardView: View {
     @Environment(\.dismiss) private var dismiss
-
-    @State private var entries: [LeaderboardEntry] = []
+    
+    @State private var showingXPInfo = false
+    @State private var entries: [LeaderboardEntry]
     @State private var currentEntry: LeaderboardEntry?
-    @State private var isLoading = true
+    @State private var isLoading: Bool
     @State private var errorMessage: String?
+    private let isPreview: Bool
+
+    init(
+        previewEntries: [LeaderboardEntry] = [],
+        previewCurrentEntry: LeaderboardEntry? = nil,
+        previewLoading: Bool = true,
+        isPreview: Bool = false
+    ) {
+        _entries = State(initialValue: previewEntries)
+        _currentEntry = State(initialValue: previewCurrentEntry)
+        _isLoading = State(initialValue: previewLoading)
+        _errorMessage = State(initialValue: nil)
+        self.isPreview = isPreview
+    }
 
     private var orderedEntries: [LeaderboardEntry] {
         entries.sorted { $0.rank < $1.rank }
@@ -37,7 +52,6 @@ struct LeaderboardView: View {
             .padding(.bottom, 32)
         }
         .background(Color(UIColor.systemGroupedBackground))
-        .navigationTitle("Leaderboard")
         .navigationBarTitleDisplayMode(.inline)
         .trackScreen("Leaderboard")
         .toolbar {
@@ -50,10 +64,17 @@ struct LeaderboardView: View {
             }
         }
         .task {
-            await loadLeaderboard(showLoading: true)
+            if !isPreview {
+                await loadLeaderboard(showLoading: true)
+            }
         }
         .refreshable {
             await loadLeaderboard(showLoading: false)
+        }
+        .sheet(isPresented: $showingXPInfo) {
+            XPInfoView()
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
         }
     }
 
@@ -92,16 +113,29 @@ struct LeaderboardView: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("TOP LEARNERS")
-                .font(.caption.weight(.semibold))
-                .foregroundColor(.secondary)
-                .tracking(1.2)
+        ZStack(alignment: .topTrailing) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("CERTAMEN")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .tracking(1.2)
 
-            Text("This year")
-                .font(.system(.largeTitle, design: .serif, weight: .semibold))
+                Text("Leaderboard")
+                    .font(.system(.largeTitle, design: .serif, weight: .semibold))
+
+                Text("Leaderboard for this year.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            Button {
+                showingXPInfo = true
+            } label: {
+                Image(systemName: "questionmark.circle")
+                    .font(.title3)
+            }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 20)
     }
 
@@ -325,8 +359,179 @@ private struct LeaderboardRow: View {
     }
 }
 
+struct XPInfoView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    private struct XPItem: Identifiable {
+        let id = UUID()
+        let icon: String
+        let title: String
+        let detail: String
+    }
+
+    private let items: [XPItem] = [
+        XPItem(
+            icon: "checkmark.seal.fill",
+            title: "Complete a review",
+            detail: "Xp determents your place on the leaderboard."
+        ),
+        XPItem(
+            icon: "target",
+            title: "Accuracy matters",
+            detail: "A word in stack 1 earns 1 XP, stack 2 earns 2, and so on up to stack 5. The better you know a word, the more it's worth."
+        )
+    ]
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
+                    Text("XP, or *experientia*, measures how much you've practiced. The more you review and the higher you get your words in the stacks, the faster you climb the leaderboard.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+
+                    VStack(spacing: 0) {
+                        ForEach(items) { item in
+                            HStack{
+                                row(item)
+                                
+                                if item.id != items.last?.id {
+                                    Divider().padding(.leading, 52)
+                                }
+                            }
+                        }
+                    }
+                    .background(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .fill(Color(UIColor.secondarySystemGroupedBackground))
+                    )
+                }
+                .padding(20)
+            }
+            .background(Color(UIColor.systemGroupedBackground))
+            .navigationTitle("How XP works")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func row(_ item: XPItem) -> some View {
+        HStack(alignment: .top, spacing: 14) {
+            Image(systemName: item.icon)
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(Color.accentColor)
+                .frame(width: 24, height: 24)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(item.title)
+                    .font(.subheadline.weight(.semibold))
+
+                Text(item.detail)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+    }
+}
+
 #Preview {
+    let currentUserId = UUID()
+
+    let entries = [
+        LeaderboardEntry(
+            userId: UUID(),
+            rank: 1,
+            username: "Marcus Aurelius",
+            xp: 2840
+        ),
+        LeaderboardEntry(
+            userId: UUID(),
+            rank: 2,
+            username: "Julia Felix",
+            xp: 2510
+        ),
+        LeaderboardEntry(
+            userId: UUID(),
+            rank: 3,
+            username: "Gaius Maximus",
+            xp: 2290
+        ),
+        LeaderboardEntry(
+            userId: UUID(),
+            rank: 4,
+            username: "Lucius",
+            xp: 1985
+        ),
+        LeaderboardEntry(
+            userId: UUID(),
+            rank: 5,
+            username: "Claudia",
+            xp: 1760
+        ),
+        LeaderboardEntry(
+            userId: UUID(),
+            rank: 6,
+            username: "Quintus",
+            xp: 1595
+        ),
+        LeaderboardEntry(
+            userId: currentUserId,
+            rank: 7,
+            username: "Cornelia",
+            xp: 1430
+        ),
+        LeaderboardEntry(
+            userId: UUID(),
+            rank: 8,
+            username: "Titus",
+            xp: 1280
+        ),
+        LeaderboardEntry(
+            userId: UUID(),
+            rank: 9,
+            username: "Octavia",
+            xp: 1145
+        ),
+        LeaderboardEntry(
+            userId: UUID(),
+            rank: 10,
+            username: "Publius",
+            xp: 990
+        )
+    ]
+
     NavigationStack {
-        LeaderboardView()
+        LeaderboardView(
+            previewEntries: entries,
+            previewCurrentEntry: entries.first { $0.userId == currentUserId },
+            previewLoading: false,
+            isPreview: true
+        )
+    }
+}
+
+
+#Preview("XP Info") {
+    XPInfoView()
+}
+
+#Preview("Leaderboard – XP sheet open") {
+    // Manual preview: just render the sheet's content directly,
+    // or add a `previewShowingXPInfo` flag to LeaderboardView if you
+    // want the sheet open in the composite preview.
+    NavigationStack {
+        LeaderboardView(
+            previewEntries: [],
+            previewLoading: false,
+            isPreview: true
+        )
     }
 }

@@ -20,7 +20,7 @@ struct WordlistNotLoadedView: View {
             .tabItem {
                 Label("Home", systemImage: "house.fill")
             }
-            
+
             NavigationStack {
                 PracticeView()
             }
@@ -108,7 +108,7 @@ struct WordlistNotLoadedView: View {
                                 .fill(Color.accentColor)
                         )
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.microInteraction)
                 .padding(.horizontal, 24)
                 .frame(maxWidth: 360)
             }

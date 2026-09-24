@@ -8,10 +8,40 @@
 
 /* Begin PBXBuildFile section */
 		E06830BA2FDF2FC80049B4E7 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = E06830B92FDF2FC80049B4E7 /* KeychainAccess */; };
+		F10000012F00000100000001 /* SisyphusWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000022F00000100000001 /* SisyphusWidget.swift */; };
+		F10000132F00000100000001 /* WidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = F10000032F00000100000001 /* WidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		F10000162F00000100000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E0FEF6222FABCA6E0049C777 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F10000082F00000100000001;
+			remoteInfo = WidgetExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		F10000142F00000100000001 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				F10000132F00000100000001 /* WidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		E0FEF62A2FABCA6E0049C777 /* sisyphus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = sisyphus.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F10000022F00000100000001 /* SisyphusWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SisyphusWidget.swift; sourceTree = "<group>"; };
+		F10000032F00000100000001 /* WidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		F10000042F00000100000001 /* WidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WidgetExtension.entitlements; sourceTree = "<group>"; };
+		F10000172F00000100000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -31,6 +61,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F10000092F00000100000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -38,6 +75,7 @@
 			isa = PBXGroup;
 			children = (
 				E0FEF62C2FABCA6E0049C777 /* sisyphus */,
+				F10000052F00000100000001 /* WidgetExtension */,
 				E0FEF62B2FABCA6E0049C777 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -46,8 +84,19 @@
 			isa = PBXGroup;
 			children = (
 				E0FEF62A2FABCA6E0049C777 /* sisyphus.app */,
+				F10000032F00000100000001 /* WidgetExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		F10000052F00000100000001 /* WidgetExtension */ = {
+			isa = PBXGroup;
+			children = (
+				F10000022F00000100000001 /* SisyphusWidget.swift */,
+				F10000042F00000100000001 /* WidgetExtension.entitlements */,
+				F10000172F00000100000001 /* Info.plist */,
+			);
+			path = WidgetExtension;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -60,10 +109,12 @@
 				E0FEF6262FABCA6E0049C777 /* Sources */,
 				E0FEF6272FABCA6E0049C777 /* Frameworks */,
 				E0FEF6282FABCA6E0049C777 /* Resources */,
+				F10000142F00000100000001 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				F10000152F00000100000001 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				E0FEF62C2FABCA6E0049C777 /* sisyphus */,
@@ -76,6 +127,23 @@
 			productReference = E0FEF62A2FABCA6E0049C777 /* sisyphus.app */;
 			productType = "com.apple.product-type.application";
 		};
+		F10000082F00000100000001 /* WidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F10000102F00000100000001 /* Build configuration list for PBXNativeTarget "WidgetExtension" */;
+			buildPhases = (
+				F10000062F00000100000001 /* Sources */,
+				F10000092F00000100000001 /* Frameworks */,
+				F10000072F00000100000001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = WidgetExtension;
+			productName = WidgetExtension;
+			productReference = F10000032F00000100000001 /* WidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -87,6 +155,9 @@
 				LastUpgradeCheck = 2650;
 				TargetAttributes = {
 					E0FEF6292FABCA6E0049C777 = {
+						CreatedOnToolsVersion = 26.4.1;
+					};
+					F10000082F00000100000001 = {
 						CreatedOnToolsVersion = 26.4.1;
 					};
 				};
@@ -110,12 +181,20 @@
 			projectRoot = "";
 			targets = (
 				E0FEF6292FABCA6E0049C777 /* sisyphus */,
+				F10000082F00000100000001 /* WidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		E0FEF6282FABCA6E0049C777 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F10000072F00000100000001 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -132,7 +211,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F10000062F00000100000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F10000012F00000100000001 /* SisyphusWidget.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		F10000152F00000100000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F10000082F00000100000001 /* WidgetExtension */;
+			targetProxy = F10000162F00000100000001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		E0FEF6332FABCA6F0049C777 /* Debug */ = {
@@ -266,6 +361,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = sisyphus/sisyphus.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = N7UZ8BZWGY;
@@ -302,6 +398,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = sisyphus/sisyphus.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = N7UZ8BZWGY;
@@ -332,6 +429,47 @@
 			};
 			name = Release;
 		};
+		F10000112F00000100000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = WidgetExtension/WidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 8;
+				DEVELOPMENT_TEAM = N7UZ8BZWGY;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = WidgetExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Sisyphus;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				MARKETING_VERSION = 1.3;
+				PRODUCT_BUNDLE_IDENTIFIER = tureluurtje.sisyphus.WidgetExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		F10000122F00000100000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = WidgetExtension/WidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 8;
+				DEVELOPMENT_TEAM = N7UZ8BZWGY;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = WidgetExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Sisyphus;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				MARKETING_VERSION = 1.3;
+				PRODUCT_BUNDLE_IDENTIFIER = tureluurtje.sisyphus.WidgetExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -349,6 +487,15 @@
 			buildConfigurations = (
 				E0FEF6362FABCA6F0049C777 /* Debug */,
 				E0FEF6372FABCA6F0049C777 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F10000102F00000100000001 /* Build configuration list for PBXNativeTarget "WidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F10000112F00000100000001 /* Debug */,
+				F10000122F00000100000001 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

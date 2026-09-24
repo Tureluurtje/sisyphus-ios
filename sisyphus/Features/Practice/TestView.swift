@@ -116,7 +116,10 @@ struct TestView: View {
     private func optionRow(_ option: TestOption, question: TestQuestion) -> some View {
         let isSelected = selectedOptionId == option.id
 
-        return Button(action: { selectedOptionId = option.id }) {
+        return Button(action: {
+            selectedOptionId = option.id
+            Haptics.selection()
+        }) {
             HStack {
                 Text(option.translation)
                     .font(.body)
@@ -137,7 +140,7 @@ struct TestView: View {
                     .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 2)
             )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.microInteraction)
     }
 
     private func advance() {

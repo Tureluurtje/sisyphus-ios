@@ -40,6 +40,7 @@ struct PracticeView: View {
                 testCard
             }
             .padding(.bottom, 32)
+            .animation(.smooth(duration: 0.3), value: isLoadingDifficult)
         }
         .background(Color(UIColor.systemGroupedBackground))
         .navigationTitle("Practice")
@@ -146,7 +147,7 @@ struct PracticeView: View {
                 comingSoon: true
             )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.microInteraction)
         .disabled(true)
         .padding(.horizontal, 20)
     }
@@ -172,7 +173,7 @@ struct PracticeView: View {
                 comingSoon: comingSoon
             )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.microInteraction)
         .disabled(comingSoon)
         .padding(.horizontal, 20)
     }
@@ -371,7 +372,7 @@ private struct PracticeStatusCard: View {
                             .font(.caption.weight(.semibold))
                             .foregroundColor(.accentColor)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.microInteraction)
                     .padding(.top, 4)
 
                 case .empty:

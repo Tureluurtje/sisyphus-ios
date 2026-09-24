@@ -201,6 +201,7 @@ struct SettingsView: View {
     @AppStorage("dailyReminderEnabled") private var notificationsEnabled = false
     @AppStorage("repeatIncorrectWords") private var repeatIncorrectWords = true
     @AppStorage("appLanguage") private var appLanguageRaw: String = AppLanguage.system.rawValue
+    @AppStorage("appLaunchCount") private var appLaunchCount = 0
 
     @State private var isConfirming = false
     @State private var isConfirmingGradeChange = false
@@ -279,6 +280,15 @@ struct SettingsView: View {
                 divider
                 row {
                     Link("Legal", destination: URL(string: "https://sisyphus.kwako.nl/legal")!)
+                }
+                if appLaunchCount >= 5 && AppReviewManager.canShowRateButton {
+                    divider
+                    row {
+                        Button("Rate Sisyphus") {
+                            AppReviewManager.requestReview()
+                        }
+                        .tint(.accentColor)
+                    }
                 }
             }
         }
@@ -437,7 +447,7 @@ struct SettingsView: View {
             } else {
                 await MainActor.run {
                     notificationsEnabled = false
-                    errorManager.show("Enable notifications for LatiLearn in Settings to turn this on.")
+                    errorManager.show("Enable notifications for Sisyphus in Settings to turn this on.")
                 }
             }
         } else {

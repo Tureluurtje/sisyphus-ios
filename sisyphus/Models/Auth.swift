@@ -19,6 +19,7 @@ struct RefreshTokenPair {
 enum AppState {
     case loading
     case serverError
+    case updateRequired(AppUpdateRequirement)
     case authenticated
     case unauthenticated
 }

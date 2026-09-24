@@ -79,7 +79,7 @@ struct LoginView: View {
                                 .frame(width: 44, height: 44)
                                 .contentShape(Rectangle())
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.microInteraction)
                         .accessibilityLabel(isPasswordVisible ? "Hide password" : "Show password")
                     }
 
@@ -122,7 +122,7 @@ struct LoginView: View {
                     }
                     .font(.subheadline)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.microInteraction)
                 .disabled(isLoading)
                 .padding(.bottom, 24)
             }
@@ -185,7 +185,7 @@ struct LoginView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .contentShape(Rectangle())
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.microInteraction)
                     .disabled(isResendingVerification || email.isEmpty)
                 }
             }
@@ -404,7 +404,7 @@ struct ForgotPasswordView: View {
                     .font(.subheadline.weight(.semibold))
                     .foregroundColor(.accentColor)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.microInteraction)
             .padding(.top, 4)
         }
         .frame(maxWidth: .infinity)
@@ -469,7 +469,7 @@ private func primaryButton(
         .frame(height: 50)
         .contentShape(Rectangle())
     }
-    .buttonStyle(.plain)
+    .buttonStyle(.microInteraction)
     .background(Color.accentColor)
     .foregroundColor(.white)
     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
